@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飲食店経営計算アプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .calculator-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .calculator-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .calculator-card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            border-left: 5px solid #667eea;
+        }
+
+        .result h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: #764ba2;
+            font-size: 1.1em;
+        }
+
+        .warning {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+
+        .success {
+            color: #27ae60;
+            font-weight: 700;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #1976d2;
+        }
+
+        .diagnosis {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #3498db;
+        }
+
+        .diagnosis.excellent {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .diagnosis.good {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+        }
+
+        .diagnosis.warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+
+        .diagnosis.danger {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .diagnosis h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .diagnosis.excellent h4 {
+            color: #28a745;
+        }
+
+        .diagnosis.good h4 {
+            color: #17a2b8;
+        }
+
+        .diagnosis.warning h4 {
+            color: #856404;
+        }
+
+        .diagnosis.danger h4 {
+            color: #721c24;
+        }
+
+        .diagnosis p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .diagnosis ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .diagnosis li {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+
+        .diagnosis-icon {
+            font-size: 1.3em;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ 飲食店経営計算アプリ</h1>
+            <p>経営に必要な各種指標を簡単に計算</p>
+        </div>
+
+        <div class="calculator-grid">
+            <!-- 原価率計算 -->
+            <div class="calculator-card">
+                <h2>📊 原価率計算</h2>
+                <div class="input-group">
+                    <label>料理の原価（円）</label>
+                    <input type="number" id="cost" placeholder="例: 300">
+                </div>
+                <div class="input-group">
+                    <label>販売価格（円）</label>
+                    <input type="number" id="price" placeholder="例: 1000">
+                </div>
+                <button class="btn" onclick="calculateFoodCost()">計算する</button>
+                <div id="foodCostResult"></div>
+                <div class="info-box">
+                    💡 理想的な原価率は30%以下とされています
+                </div>
+            </div>
+
+            <!-- 損益分岐点計算 -->
+            <div class="calculator-card">
+                <h2>📈 損益分岐点計算</h2>
+                <div class="input-group">
+                    <label>固定費（月額・円）</label>
+                    <input type="number" id="fixedCost" placeholder="例: 1000000">
+                </div>
+                <div class="input-group">
+                    <label>変動費率（%）</label>
+                    <input type="number" id="variableCostRate" placeholder="例: 35">
+                </div>
+                <button class="btn" onclick="calculateBreakEven()">計算する</button>
+                <div id="breakEvenResult"></div>
+                <div class="info-box">
+                    💡 変動費率 = (原価率 + その他変動費率)
+                </div>
+            </div>
+
+            <!-- FL比率計算 -->
+            <div class="calculator-card">
+                <h2>👥 FL比率計算</h2>
+                <div class="input-group">
+                    <label>売上高（円）</label>
+                    <input type="number" id="flSales" placeholder="例: 5000000">
+                </div>
+                <div class="input-group">
+                    <label>原価（Food Cost・円）</label>
+                    <input type="number" id="foodCost" placeholder="例: 1500000">
+                </div>
+                <div class="input-group">
+                    <label>人件費（Labor Cost・円）</label>
+                    <input type="number" id="laborCost" placeholder="例: 1250000">
+                </div>
+                <button class="btn" onclick="calculateFL()">計算する</button>
+                <div id="flResult"></div>
+                <div class="info-box">
+                    💡 理想的なFL比率は55%以下とされています
+                </div>
+            </div>
+
+            <!-- 客単価・回転率分析 -->
+            <div class="calculator-card">
+                <h2>💰 客単価・回転率分析</h2>
+                <div class="input-group">
+                    <label>目標月商（円）</label>
+                    <input type="number" id="targetSales" placeholder="例: 5000000">
+                </div>
+                <div class="input-group">
+                    <label>席数</label>
+                    <input type="number" id="seats" placeholder="例: 30">
+                </div>
+                <div class="input-group">
+                    <label>営業日数（日/月）</label>
+                    <input type="number" id="openDays" placeholder="例: 26">
+                </div>
+                <div class="input-group">
+                    <label>希望客単価（円）</label>
+                    <input type="number" id="avgSpend" placeholder="例: 3000">
+                </div>
+                <button class="btn" onclick="calculateTurnover()">計算する</button>
+                <div id="turnoverResult"></div>
+                <div class="info-box">
+                    💡 回転率 = 必要客数 ÷ (席数 × 営業日数)
+                </div>
+            </div>
+
+            <!-- 人件費管理 -->
+            <div class="calculator-card">
+                <h2>⏰ 人件費管理</h2>
+                <div class="input-group">
+                    <label>スタッフ数</label>
+                    <input type="number" id="staffCount" placeholder="例: 5">
+                </div>
+                <div class="input-group">
+                    <label>平均時給（円）</label>
+                    <input type="number" id="hourlyWage" placeholder="例: 1200">
+                </div>
+                <div class="input-group">
+                    <label>1日の平均労働時間</label>
+                    <input type="number" id="workHours" placeholder="例: 8">
+                </div>
+                <div class="input-group">
+                    <label>営業日数（日/月）</label>
+                    <input type="number" id="laborDays" placeholder="例: 26">
+                </div>
+                <div class="input-group">
+                    <label>月商（円）</label>
+                    <input type="number" id="monthlySales" placeholder="例: 5000000">
+                </div>
+                <button class="btn" onclick="calculateLabor()">計算する</button>
+                <div id="laborResult"></div>
+                <div class="info-box">
+                    💡 理想的な人件費率は30%以下とされています
+                </div>
+            </div>
+
+            <!-- 目標達成計算 -->
+            <div class="calculator-card">
+                <h2>🎯 目標達成計算</h2>
+                <div class="input-group">
+                    <label>目標営業利益（円/月）</label>
+                    <input type="number" id="targetProfit" placeholder="例: 500000">
+                </div>
+                <div class="input-group">
+                    <label>固定費合計（円/月）</label>
+                    <input type="number" id="totalFixed" placeholder="例: 1000000">
+                </div>
+                <div class="input-group">
+                    <label>原価率（%）</label>
+                    <input type="number" id="costRate" placeholder="例: 30">
+                </div>
+                <div class="input-group">
+                    <label>人件費率（%）</label>
+                    <input type="number" id="laborRate" placeholder="例: 25">
+                </div>
+                <button class="btn" onclick="calculateTarget()">計算する</button>
+                <div id="targetResult"></div>
+                <div class="info-box">
+                    💡 必要売上 = (固定費 + 目標利益) ÷ (1 - 変動費率)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 原価率計算
+        function calculateFoodCost() {
+            const cost = parseFloat(document.getElementById('cost').value);
+            const price = parseFloat(document.getElementById('price').value);
+            
+            if (!cost || !price) {
+                alert('すべての項目を入力してください');
+                return;
+            }
+            
+            const costRate = (cost / price * 100).toFixed(2);
+            const profit = price - cost;
+            const profitRate = (profit / price * 100).toFixed(2);
+            
+            let statusClass = costRate <= 30 ? 'success' : 'warning';
+            let statusText = costRate <= 30 ? '✓ 適正範囲内' : '⚠ 原価率が高めです';
+            
+            // 診断結果の生成
+            let diagnosis = getDiagnosisFoodCost(parseFloat(costRate));
+            
+            document.getElementById('foodCostResult').innerHTML = `
+                <div class="result">
+                    <h3>計算結果</h3>
+                    <div class="result-item">
+                        <span>原価率</span>
+                        <span class="result-value ${statusClass}">${costRate}%</span>
+                    </div>
+                    <div class="result-item">
+                        <span>粗利益</span>
+                        <span class="result-value">${profit.toLocaleString()}円</span>
+                    </div>
+                    <div class="result-item">
+                        <span>粗利益率</span>
+                        <span class="result-value">${profitRate}%</span>
+                    </div>
+                    <div class="result-item">
+                        <span>評価</span>
+                        <span class="${statusClass}">${statusText}</span>
+                    </div>
+                </div>
+                ${diagnosis}
+            `;
+        }
+
+        // 損益分岐点計算
+        function calculateBreakEven() {
+            const fixedCost = parseFloat(document.getElementById('fixedCost').value);
+            const variableCostRate = parseFloat(document.getElementById('variableCostRate').value);
+            
+            if (!fixedCost || !variableCostRate) {
+                alert('すべての項目を入力してください');
+                return;
+            }
+            
+            const breakEvenSales = fixedCost / (1 - variableCostRate / 100);
+            const dailySales = breakEvenSales / 30;
+            const marginalProfitRate = 100 - variableCostRate;
+            
+            // 診断結果の生成
+            let diagnosis = getDiagnosisBreakEven(marginalProfitRate);
+            
+            document.getElementById('breakEvenResult').innerHTML = `
+                <div class="result">
+                    <h3>計算結果</h3>
+                    <div class="result-item">
+                        <span>損益分岐点売上（月）</span>
+                        <span class="result-value">${breakEvenSales.toLocaleString()}円</span>
+                    </div>
+                    <div class="result-item">
+                        <span>損益分岐点売上（日）</span>
+                        <span class="result-value">${dailySales.toLocaleString()}円</span>
+                    </div>
+                    <div class="result-item">
+                        <span>限界利益率</span>
+                        <span class="result-value">${marginalProfitRate.toFixed(2)}%</span>
+                    </div>
+                </div>
+                ${diagnosis}
+            `;
+        }
+
+        // FL比率計算
+        function calculateFL() {
+            const sales = parseFloat(document.getElementById('flSales').value);
+            const food = parseFloat(document.getElementById('foodCost').value);
+            const labor = parseFloat(document.getElementById('laborCost').value);
+            
+            if (!sales || !food || !labor) {
+                alert('すべての項目を入力してください');
+                return;
+            }
+            
+            const flRatio = ((food + labor) / sales * 100).toFixed(2);
+            const foodRate = (food / sales * 100).toFixed(2);
+            const laborRate = (labor / sales * 100).toFixed(2);
+            
+            let statusClass = flRatio <= 55 ? 'success' : 'warning';
+            let statusText = flRatio <= 55 ? '✓ 適正範囲内' : '⚠ FL比率が高めです';
+            
+            // 診断結果の生成
+            let diagnosis = getDiagnosisFL(parseFloat(flRatio), parseFloat(foodRate), parseFloat(laborRate));
+            
+            document.getElementById('flResult').innerHTML = `
+                <div class="result">
+                    <h3>計算結果</h3>
+                    <div class="result-item">
+                        <span>FL比率</span>
+                        <span class="result-value ${statusClass}">${flRatio}%</span>
+                    </div>
+                    <div class="result-item">
+                        <span>F比率（原価率）</span>
+                        <span class="result-value">${foodRate}%</span>
+                    </div>
+                    <div class="result-item">
+                        <span>L比率（人件費率）</span>
+                        <span class="result-value">${laborRate}%</span>
+                    </div>
+                    <div class="result-item">
+                        <span>評価</span>
+                        <span class="${statusClass}">${statusText}</span>
+                    </div>
+                </div>
+                ${diagnosis}
+            `;
+        }
+
+        // 客単価・回転率分析
+        function calculateTurnover() {
+            const targetSales = parseFloat(document.getElementById('targetSales').value);
+            const seats = parseFloat(document.getElementById('seats').value);
+            const openDays = parseFloat(document.getElementById('openDays').value);
+            const avgSpend = parseFloat(document.getElementById('avgSpend').value);
+            
+            if (!targetSales || !seats || !openDays || !avgSpend) {
+                alert('すべての項目を入力してください');
+                return;
+            }
+            
+            const requiredCustomers = Math.ceil(targetSales / avgSpend);
+            const dailyCustomers = Math.ceil(requiredCustomers / openDays);
+            const turnoverRate = (dailyCustomers / seats).toFixed(2);
+            
+            let statusClass = turnoverRate <= 3 ? 'success' : 'warning';
+            let statusText = turnoverRate <= 3 ? '✓ 実現可能な目標' : '⚠ 高い回転率が必要です';
+            
+            // 診断結果の生成
+            let diagnosis = getDiagnosisTurnover(parseFloat(turnoverRate), avgSpend);
+            
+            document.getElementById('turnoverResult').innerHTML = `
+                <div class="result">
+                    <h3>計算結果</h3>
+                    <div class="result-item">
+                        <span>必要客数（月）</span>
+                        <span class="result-value">${requiredCustomers.toLocaleString()}人</span>
+                    </div>
+                    <div class="result-item">
+                        <span>必要客数（日）</span>
+                        <span class="result-value">${dailyCustomers.toLocaleString()}人</span>
+                    </div>
+                    <div class="result-item">
+                        <span>必要回転率</span>
+                        <span class="result-value ${statusClass}">${turnoverRate}回転</span>
+                    </div>
+                    <div class="result-item">
+                        <span>評価</span>
+                        <span class="${statusClass}">${statusText}</span>
+                    </div>
+                </div>
+                ${diagnosis}
+            `;
+        }
+
+        // 人件費管理
+        function calculateLabor() {
+            const staffCount = parseFloat(document.getElementById('staffCount').value);
+            const hourlyWage = parseFloat(document.getElementById('hourlyWage').value);
+            const workHours = parseFloat(document.getElementById('workHours').value);
+            const laborDays = parseFloat(document.getElementById('laborDays').value);
+            const monthlySales = parseFloat(document.getElementById('monthlySales').value);
+            
+            if (!staffCount || !hourlyWage || !workHours || !laborDays || !monthlySales) {
+                alert('すべての項目を入力してください');
+                return;
+            }
+            
+            const totalLaborCost = staffCount * hourlyWage * workHours * laborDays;
+            const laborCostRate = (totalLaborCost / monthlySales * 100).toFixed(2);
+            const dailyLaborCost = (totalLaborCost / laborDays).toFixed(0);
+            
+            let statusClass = laborCostRate <= 30 ? 'success' : 'warning';
+            let statusText = laborCostRate <= 30 ? '✓ 適正範囲内' : '⚠ 人件費率が高めです';
+            
+            // 診断結果の生成
+            let diagnosis = getDiagnosisLabor(parseFloat(laborCostRate));
+            
+            document.getElementById('laborResult').innerHTML = `
+                <div class="result">
+                    <h3>計算結果</h3>
+                    <div class="result-item">
+                        <span>月間人件費</span>
+                        <span class="result-value">${totalLaborCost.toLocaleString()}円</span>
+                    </div>
+                    <div class="result-item">
+                        <span>1日あたり人件費</span>
+                        <span class="result-value">${parseInt(dailyLaborCost).toLocaleString()}円</span>
+                    </div>
+                    <div class="result-item">
+                        <span>人件費率</span>
+                        <span class="result-value ${statusClass}">${laborCostRate}%</span>
+                    </div>
+                    <div class="result-item">
+                        <span>評価</span>
+                        <span class="${statusClass}">${statusText}</span>
+                    </div>
+                </div>
+                ${diagnosis}
+            `;
+        }
+
+        // 目標達成計算
+        function calculateTarget() {
+            const targetProfit = parseFloat(document.getElementById('targetProfit').value);
+            const totalFixed = parseFloat(document.getElementById('totalFixed').value);
+            const costRate = parseFloat(document.getElementById('costRate').value);
+            const laborRate = parseFloat(document.getElementById('laborRate').value);
+            
+            if (!targetProfit || !totalFixed || !costRate || !laborRate) {
+                alert('すべての項目を入力してください');
+                return;
+            }
+            
+            const variableRate = costRate + laborRate;
+            const requiredSales = (totalFixed + targetProfit) / (1 - variableRate / 100);
+            const dailySales = requiredSales / 30;
+            const profitRate = (targetProfit / requiredSales * 100).toFixed(2);
+            
+            // 診断結果の生成
+            let diagnosis = getDiagnosisTarget(parseFloat(profitRate), variableRate);
+            
+            document.getElementById('targetResult').innerHTML = `
+                <div class="result">
+                    <h3>計算結果</h3>
+                    <div class="result-item">
+                        <span>必要月商</span>
+                        <span class="result-value">${requiredSales.toLocaleString()}円</span>
+                    </div>
+                    <div class="result-item">
+                        <span>必要日商</span>
+                        <span class="result-value">${dailySales.toLocaleString()}円</span>
+                    </div>
+                    <div class="result-item">
+                        <span>目標営業利益率</span>
+                        <span class="result-value">${profitRate}%</span>
+                    </div>
+                    <div class="result-item">
+                        <span>変動費率合計</span>
+                        <span class="result-value">${variableRate}%</span>
+                    </div>
+                </div>
+                ${diagnosis}
+            `;
+        }
+
+        // 診断関数群
+        function getDiagnosisFoodCost(costRate) {
+            if (costRate <= 25) {
+                return `
+                    <div class="diagnosis excellent">
+                        <h4><span class="diagnosis-icon">🌟</span>優秀な原価管理</h4>
+                        <p>原価率が25%以下と非常に優れています。この水準を維持できれば高い収益性が期待できます。</p>
+                        <ul>
+                            <li>✓ 高い粗利益率を確保できています</li>
+                            <li>✓ 価格設定が適切で、付加価値が高い状態です</li>
+                            <li>✓ 他の経費への余裕があり、経営の安定性が高いです</li>
+                        </ul>
+                        <p><strong>アドバイス：</strong>この優れた原価管理を継続しつつ、品質維持にも注意を払いましょう。</p>
+                    </div>
+                `;
+            } else if (costRate <= 30) {
+                return `
+                    <div class="diagnosis good">
+                        <h4><span class="diagnosis-icon">👍</span>適正な原価率</h4>
+                        <p>原価率が30%以下で、業界標準の適正範囲内です。健全な経営が行えています。</p>
+                        <ul>
+                            <li>✓ 標準的な収益性を確保できています</li>
+                            <li>✓ 価格と原価のバランスが取れています</li>
+                            <li>✓ 安定した経営が可能な水準です</li>
+                        </ul>
+                        <p><strong>アドバイス：</strong>仕入れ先の見直しやロス削減で、さらなる改善の余地があります。</p>
+                    </div>
+                `;
+            } else if (costRate <= 35) {
+                return `
+                    <div class="diagnosis warning">
+                        <h4><span class="diagnosis-icon">⚠️</span>やや高めの原価率</h4>
+                        <p>原価率が30%を超えています。収益性の改善が必要です。</p>
+                        <ul>
+                            <li>⚠ 粗利益率が圧迫されている可能性があります</li>
+                            <li>⚠ 他の経費への余裕が少なくなっています</li>
+                            <li>⚠ 利益確保が難しくなる可能性があります</li>
+                        </ul>
+                        <p><strong>改善策：</strong></p>
+                        <ul>
+                            <li>• 仕入れ先の見直しと価格交渉</li>
+                            <li>• メニュー価格の適正化検討</li>
+                            <li>• 食材ロスの削減</li>
+                            <li>• 高原価メニューの見直し</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="diagnosis danger">
+                        <h4><span class="diagnosis-icon">🚨</span>危険な原価率</h4>
+                        <p>原価率が35%を超えています。早急な改善が必要です。このままでは利益確保が困難です。</p>
+                        <ul>
+                            <li>🚨 粗利益率が大幅に圧迫されています</li>
+                            <li>🚨 営業利益の確保が非常に困難な状態です</li>
+                            <li>🚨 赤字経営のリスクが高いです</li>
+                        </ul>
+                        <p><strong>緊急改善策：</strong></p>
+                        <ul>
+                            <li>• 即座に仕入れ価格の見直しを実施</li>
+                            <li>• メニュー価格の値上げを検討</li>
+                            <li>• 高原価メニューの廃止または改善</li>
+                            <li>• 食材の廃棄ロスを徹底的に削減</li>
+                            <li>• レシピの見直しと標準化</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        function getDiagnosisBreakEven(marginalProfitRate) {
+            if (marginalProfitRate >= 60) {
+                return `
+                    <div class="diagnosis excellent">
+                        <h4><span class="diagnosis-icon">🌟</span>優秀な収益構造</h4>
+                        <p>限界利益率が60%以上と非常に高く、収益性の高いビジネスモデルです。</p>
+                        <ul>
+                            <li>✓ 損益分岐点が低く、利益を出しやすい構造です</li>
+                            <li>✓ 売上増加時の利益貢献度が高いです</li>
+                            <li>✓ 経営の安定性が非常に高いです</li>
+                        </ul>
+                        <p><strong>アドバイス：</strong>この優れた収益構造を活かして、積極的な投資や事業拡大を検討できます。</p>
+                    </div>
+                `;
+            } else if (marginalProfitRate >= 50) {
+                return `
+                    <div class="diagnosis good">
+                        <h4><span class="diagnosis-icon">👍</span>健全な収益構造</h4>
+                        <p>限界利益率が50%以上で、標準的な収益性を確保できています。</p>
+                        <ul>
+                            <li>✓ 適正な損益分岐点です</li>
+                            <li>✓ 売上増加が利益に結びつきやすい構造です</li>
+                            <li>✓ 安定した経営が可能です</li>
+                        </ul>
+                        <p><strong>アドバイス：</strong>変動費の管理を徹底し、さらなる収益性向上を目指しましょう。</p>
+                    </div>
+                `;
+            } else if (marginalProfitRate >= 40) {
+                return `
+                    <div class="diagnosis warning">
+                        <h4><span class="diagnosis-icon">⚠️</span>改善が必要な収益構造</h4>
+                        <p>限界利益率が50%を下回っています。変動費の見直しが必要です。</p>
+                        <ul>
+                            <li>⚠ 損益分岐点が高めです</li>
+                            <li>⚠ 多くの売上が必要になります</li>
+                            <li>⚠ 利益確保が難しい構造です</li>
+                        </ul>
+                        <p><strong>改善策：</strong></p>
+                        <ul>
+                            <li>• 原価率の削減</li>
+                            <li>• 変動費全体の見直し</li>
+                            <li>• 効率的なオペレーション構築</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="diagnosis danger">
+                        <h4><span class="diagnosis-icon">🚨</span>危険な収益構造</h4>
+                        <p>限界利益率が40%を下回っています。早急な改善が必要です。</p>
+                        <ul>
+                            <li>🚨 損益分岐点が非常に高いです</li>
+                            <li>🚨 利益を出すことが極めて困難です</li>
+                            <li>🚨 ビジネスモデルの根本的見直しが必要です</li>
+                        </ul>
+                        <p><strong>緊急改善策：</strong></p>
+                        <ul>
+                            <li>• 原価率の大幅削減</li>
+                            <li>• 価格設定の全面見直し</li>
+                            <li>• ビジネスモデルの再構築検討</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        function getDiagnosisFL(flRatio, foodRate, laborRate) {
+            let diagnosis = '';
+            
+            if (flRatio <= 50) {
+                diagnosis = `
+                    <div class="diagnosis excellent">
+                        <h4><span class="diagnosis-icon">🌟</span>優秀なFL比率</h4>
+                        <p>FL比率が50%以下と非常に優れています。高い収益性を実現できています。</p>
+                        <ul>
+                            <li>✓ 原価と人件費のバランスが優秀です</li>
+                            <li>✓ 高い営業利益率が期待できます</li>
+                            <li>✓ 経営の安定性が非常に高いです</li>
+                        </ul>
+                `;
+            } else if (flRatio <= 55) {
+                diagnosis = `
+                    <div class="diagnosis good">
+                        <h4><span class="diagnosis-icon">👍</span>適正なFL比率</h4>
+                        <p>FL比率が55%以下で、業界標準の適正範囲内です。</p>
+                        <ul>
+                            <li>✓ 原価と人件費のバランスが良好です</li>
+                            <li>✓ 標準的な収益性を確保できています</li>
+                            <li>✓ 健全な経営状態です</li>
+                        </ul>
+                `;
+            } else if (flRatio <= 60) {
+                diagnosis = `
+                    <div class="diagnosis warning">
+                        <h4><span class="diagnosis-icon">⚠️</span>やや高めのFL比率</h4>
+                        <p>FL比率が55%を超えています。改善の余地があります。</p>
+                        <ul>
+                            <li>⚠ 営業利益率が圧迫されています</li>
+                            <li>⚠ 原価または人件費の見直しが必要です</li>
+                            <li>⚠ 収益性の改善が求められます</li>
+                        </ul>
+                `;
+            } else {
+                diagnosis = `
+                    <div class="diagnosis danger">
+                        <h4><span class="diagnosis-icon">🚨</span>危険なFL比率</h4>
+                        <p>FL比率が60%を超えています。早急な改善が必要です。</p>
+                        <ul>
+                            <li>🚨 営業利益の確保が非常に困難です</li>
+                            <li>🚨 原価と人件費が売上を圧迫しています</li>
+                            <li>🚨 赤字経営のリスクが高いです</li>
+                        </ul>
+                `;
+            }
+
+            // F比率とL比率の個別診断
+            let fDiagnosis = '';
+            let lDiagnosis = '';
+
+            if (foodRate > 32) {
+                fDiagnosis = '<li>• <strong>F比率（原価率）：</strong>高めです。仕入れ先の見直しや食材ロス削減が必要です</li>';
+            } else if (foodRate < 28) {
+                fDiagnosis = '<li>• <strong>F比率（原価率）：</strong>優秀です。この水準を維持しましょう</li>';
+            }
+
+            if (laborRate > 32) {
+                lDiagnosis = '<li>• <strong>L比率（人件費率）：</strong>高めです。シフト管理の見直しや生産性向上が必要です</li>';
+            } else if (laborRate < 28) {
+                lDiagnosis = '<li>• <strong>L比率（人件費率）：</strong>優秀です。適正な人員配置ができています</li>';
+            }
+
+            if (fDiagnosis || lDiagnosis) {
+                diagnosis += '<p><strong>詳細分析：</strong></p><ul>' + fDiagnosis + lDiagnosis + '</ul>';
+            }
+
+            diagnosis += '</div>';
+            return diagnosis;
+        }
+
+        function getDiagnosisTurnover(turnoverRate, avgSpend) {
+            if (turnoverRate <= 2) {
+                return `
+                    <div class="diagnosis excellent">
+                        <h4><span class="diagnosis-icon">🌟</span>実現可能な目標設定</h4>
+                        <p>回転率2回転以下で、非常に現実的な目標です。</p>
+                        <ul>
+                            <li>✓ 落ち着いた接客が可能です</li>
+                            <li>✓ サービス品質を維持しやすいです</li>
+                            <li>✓ スタッフへの負担も適正です</li>
+                        </ul>
+                        <p><strong>アドバイス：</strong>余裕のある運営で、顧客満足度の向上に注力できます。</p>
+                    </div>
+                `;
+            } else if (turnoverRate <= 3) {
+                return `
+                    <div class="diagnosis good">
+                        <h4><span class="diagnosis-icon">👍</span>適正な目標設定</h4>
+                        <p>回転率3回転以下で、一般的な飲食店として実現可能な目標です。</p>
+                        <ul>
+                            <li>✓ 標準的な回転率です</li>
+                            <li>✓ 効率的な運営が可能です</li>
+                            <li>✓ バランスの取れた目標設定です</li>
+                        </ul>
+                        <p><strong>アドバイス：</strong>オペレーションの効率化で、さらに余裕のある運営が可能です。</p>
+                    </div>
+                `;
+            } else if (turnoverRate <= 4) {
+                return `
+                    <div class="diagnosis warning">
+                        <h4><span class="diagnosis-icon">⚠️</span>やや高い回転率</h4>
+                        <p>回転率が3回転を超えています。実現にはかなりの努力が必要です。</p>
+                        <ul>
+                            <li>⚠ スタッフへの負担が大きくなります</li>
+                            <li>⚠ サービス品質の維持が課題です</li>
+                            <li>⚠ オペレーションの高度化が必要です</li>
+                        </ul>
+                        <p><strong>改善策：</strong></p>
+                        <ul>
+                            <li>• 客単価を上げて必要回転率を下げる（現在${avgSpend.toLocaleString()}円）</li>
+                            <li>• テイクアウトやデリバリーで売上を補完</li>
+                            <li>• オペレーションの徹底的な効率化</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="diagnosis danger">
+                        <h4><span class="diagnosis-icon">🚨</span>非現実的な回転率</h4>
+                        <p>回転率が4回転を超えています。この目標達成は極めて困難です。</p>
+                        <ul>
+                            <li>🚨 実現可能性が極めて低いです</li>
+                            <li>🚨 スタッフが疲弊し、離職率が高まります</li>
+                            <li>🚨 サービス品質の低下が避けられません</li>
+                        </ul>
+                        <p><strong>緊急改善策：</strong></p>
+                        <ul>
+                            <li>• 客単価の大幅引き上げを検討（現在${avgSpend.toLocaleString()}円）</li>
+                            <li>• 目標売上の見直し</li>
+                            <li>• ビジネスモデルの再検討</li>
+                            <li>• 席数の増加を検討</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        function getDiagnosisLabor(laborCostRate) {
+            if (laborCostRate <= 25) {
+                return `
+                    <div class="diagnosis excellent">
+                        <h4><span class="diagnosis-icon">🌟</span>優秀な人件費管理</h4>
+                        <p>人件費率が25%以下と非常に優れています。効率的な人員配置ができています。</p>
+                        <ul>
+                            <li>✓ 高い生産性を実現できています</li>
+                            <li>✓ 人件費コントロールが優秀です</li>
+                            <li>✓ 収益性への貢献度が高いです</li>
+                        </ul>
+                        <p><strong>アドバイス：</strong>この水準を維持しつつ、スタッフの待遇改善にも配慮しましょう。</p>
+                    </div>
+                `;
+            } else if (laborCostRate <= 30) {
+                return `
+                    <div class="diagnosis good">
+                        <h4><span class="diagnosis-icon">👍</span>適正な人件費率</h4>
+                        <p>人件費率が30%以下で、業界標準の適正範囲内です。</p>
+                        <ul>
+                            <li>✓ 標準的な人件費管理ができています</li>
+                            <li>✓ バランスの取れた人員配置です</li>
+                            <li>✓ 健全な経営状態です</li>
+                        </ul>
+                        <p><strong>アドバイス：</strong>シフト管理の最適化で、さらなる改善の余地があります。</p>
+                    </div>
+                `;
+            } else if (laborCostRate <= 35) {
+                return `
+                    <div class="diagnosis warning">
+                        <h4><span class="diagnosis-icon">⚠️</span>やや高めの人件費率</h4>
+                        <p>人件費率が30%を超えています。改善の余地があります。</p>
+                        <ul>
+                            <li>⚠ 人件費が利益を圧迫しています</li>
+                            <li>⚠ 生産性の向上が必要です</li>
+                            <li>⚠ シフト管理の見直しが求められます</li>
+                        </ul>
+                        <p><strong>改善策：</strong></p>
+                        <ul>
+                            <li>• シフトの最適化（ピークタイムに集中配置）</li>
+                            <li>• 作業の効率化と標準化</li>
+                            <li>• マルチタスク化によるスタッフの生産性向上</li>
+                            <li>• 売上高の増加による人件費率の改善</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="diagnosis danger">
+                        <h4><span class="diagnosis-icon">🚨</span>危険な人件費率</h4>
+                        <p>人件費率が35%を超えています。早急な改善が必要です。</p>
+                        <ul>
+                            <li>🚨 人件費が過剰です</li>
+                            <li>🚨 利益確保が非常に困難です</li>
+                            <li>🚨 経営を圧迫する要因になっています</li>
+                        </ul>
+                        <p><strong>緊急改善策：</strong></p>
+                        <ul>
+                            <li>• 人員配置の全面的な見直し</li>
+                            <li>• 不要な労働時間の削減</li>
+                            <li>• オペレーションの抜本的改革</li>
+                            <li>• セルフサービス化の検討</li>
+                            <li>• 売上増加施策の実施</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        function getDiagnosisTarget(profitRate, variableRate) {
+            let diagnosis = '';
+            
+            if (profitRate >= 15) {
+                diagnosis = `
+                    <div class="diagnosis excellent">
+                        <h4><span class="diagnosis-icon">🌟</span>高い目標利益率</h4>
+                        <p>営業利益率15%以上の目標は非常に野心的で、達成できれば優秀な経営です。</p>
+                        <ul>
+                            <li>✓ 高い収益性を目指しています</li>
+                            <li>✓ 成長投資や事業拡大が可能です</li>
+                            <li>✓ 経営の安定性が高まります</li>
+                        </ul>
+                `;
+            } else if (profitRate >= 10) {
+                diagnosis = `
+                    <div class="diagnosis good">
+                        <h4><span class="diagnosis-icon">👍</span>適正な目標利益率</h4>
+                        <p>営業利益率10-15%の目標は、飲食業として健全な水準です。</p>
+                        <ul>
+                            <li>✓ 標準的な収益性を目指しています</li>
+                            <li>✓ 安定した経営が可能です</li>
+                            <li>✓ 適切な投資余力があります</li>
+                        </ul>
+                `;
+            } else if (profitRate >= 5) {
+                diagnosis = `
+                    <div class="diagnosis warning">
+                        <h4><span class="diagnosis-icon">⚠️</span>やや低めの目標利益率</h4>
+                        <p>営業利益率が5-10%です。もう少し高い目標設定を検討しましょう。</p>
+                        <ul>
+                            <li>⚠ 投資余力が限られます</li>
+                            <li>⚠ 急な支出への対応が困難です</li>
+                            <li>⚠ 事業拡大の余裕が少ないです</li>
+                        </ul>
+                `;
+            } else {
+                diagnosis = `
+                    <div class="diagnosis danger">
+                        <h4><span class="diagnosis-icon">🚨</span>低すぎる目標利益率</h4>
+                        <p>営業利益率が5%未満です。より高い目標設定が必要です。</p>
+                        <ul>
+                            <li>🚨 経営の余裕がほとんどありません</li>
+                            <li>🚨 トラブル時の対応が困難です</li>
+                            <li>🚨 持続的な経営が危ぶまれます</li>
+                        </ul>
+                `;
+            }
+
+            // 変動費率の診断
+            if (variableRate > 60) {
+                diagnosis += `
+                    <p><strong>⚠️ 変動費率が高すぎます（${variableRate}%）</strong></p>
+                    <p>原価率と人件費率の合計が60%を超えています。目標達成のためには、変動費の削減が不可欠です。</p>
+                    <ul>
+                        <li>• 原価率の削減を最優先で実施</li>
+                        <li>• 人件費の効率化</li>
+                        <li>• 価格設定の見直し</li>
+                    </ul>
+                `;
+            }
+
+            diagnosis += '</div>';
+            return diagnosis;
+        }
+    </script>
+</body>
+</html>
